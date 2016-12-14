@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RailsVR.CSharp.Plugins", "RailsVR.CSharp.Plugins.csproj", "{A3A90057-19E0-1D38-9901-1BAB0464637C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RailsVR.CSharp", "RailsVR.CSharp.csproj", "{9A256534-465F-5DFF-480F-457030DC417F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RailsVR.CSharp.Editor.Plugins", "RailsVR.CSharp.Editor.Plugins.csproj", "{6C9CA3A9-A992-8CBC-175C-475DF34F2159}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A3A90057-19E0-1D38-9901-1BAB0464637C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3A90057-19E0-1D38-9901-1BAB0464637C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3A90057-19E0-1D38-9901-1BAB0464637C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3A90057-19E0-1D38-9901-1BAB0464637C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A256534-465F-5DFF-480F-457030DC417F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A256534-465F-5DFF-480F-457030DC417F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A256534-465F-5DFF-480F-457030DC417F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A256534-465F-5DFF-480F-457030DC417F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C9CA3A9-A992-8CBC-175C-475DF34F2159}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C9CA3A9-A992-8CBC-175C-475DF34F2159}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C9CA3A9-A992-8CBC-175C-475DF34F2159}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C9CA3A9-A992-8CBC-175C-475DF34F2159}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
