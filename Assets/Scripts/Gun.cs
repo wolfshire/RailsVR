@@ -152,7 +152,7 @@ public class Gun : MonoBehaviour
     {
         if (other.transform.name.Equals("ReloadTrigger"))
         {
-            if (!_reloading && !_safety)
+            if (!_reloading)
                 StartCoroutine(Reload());
         }
     }

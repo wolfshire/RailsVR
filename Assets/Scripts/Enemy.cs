@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Health))]
-[RequireComponent(typeof(EnemyMovement))]
+[RequireComponent(typeof(Move))]
 public class Enemy : Shootable
 {
     private Health _health;
@@ -11,16 +11,14 @@ public class Enemy : Shootable
 	void Start()
 	{
         _health = GetComponent<Health>();
-	}
-
-	void Update()
-	{
-		
+        _health.Death += () =>
+        {
+            Destroy(gameObject);
+        };
 	}
 
     public override void OnClick()
     {
         _health.TakeDamage(1);
-        Destroy(gameObject);
     }
 }

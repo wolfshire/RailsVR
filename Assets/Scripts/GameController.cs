@@ -2,18 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
     public GameObject player;
 
-    private PlayerMove _playerMove;
+    private Move _playerMove;
 
     private AudioSource _audioSource;
     private Gun _playerGun;
     private List<GameEvent> _events;
     private int _eventCounter;
     private int _enemyCount;
+
+    private AsyncOperation asyncOperation;
+
+    public bool dev = false;
 
     private bool _busy = false;
     public bool Busy
@@ -33,7 +38,7 @@ public class GameController : MonoBehaviour
     
     void Start()
     {
-        _playerMove = player.GetComponent<PlayerMove>();
+        _playerMove = player.GetComponent<Move>();
         _playerGun = player.GetComponentInChildren<Gun>(true);
 
         _audioSource = GetComponent<AudioSource>();
@@ -63,9 +68,9 @@ public class GameController : MonoBehaviour
     private IEnumerator MovePlayer(Transform targetLocation)
     {
         Busy = true;
-
+        
         _playerGun.EnableSafety();
-        _playerMove.Move(targetLocation);
+        _playerMove.StartMove(targetLocation);
 
         while (!_playerMove.Arrived)
             yield return null;
@@ -96,7 +101,7 @@ public class GameController : MonoBehaviour
     private void SpawnEnemy(GameObject prefab, Transform spawn, Transform destination)
     {
         GameObject go = Instantiate(prefab, spawn.position, spawn.rotation);
-        go.GetComponent<EnemyMovement>().SetDestination(destination);
+        go.GetComponent<Move>().StartMove(destination);
         go.GetComponent<Health>().Death += OnEnemyDeath;
         _enemyCount++;
 
@@ -113,6 +118,19 @@ public class GameController : MonoBehaviour
         Busy = false;
     }
 
+    private IEnumerator LoadLevel(string level)
+    {
+        Busy = true;
+
+        asyncOperation = SceneManager.LoadSceneAsync(level);
+        asyncOperation.allowSceneActivation = false;
+
+        while (asyncOperation.progress < 0.9f)
+            yield return null;
+
+        asyncOperation.allowSceneActivation = true;
+    }
+
     private void OnEnemyDeath()
     {
         _enemyCount--;
@@ -122,10 +140,20 @@ public class GameController : MonoBehaviour
     {
         GameEvent e = _events[0];
         Debug.Log("Starting event " + e.EventType + " " + _eventCounter++);
+
+        if(dev && e.EventType == EEventType.AUDIO && !e.Async)
+        {
+            Debug.Log("Skipping event " + e.EventType + " " + _eventCounter++ + "(Dev Mode)");
+            Busy = false;
+            return;
+        }
         switch (e.EventType)
         {
             case EEventType.CONDITION:
                 StartCoroutine(Conditional((Func<bool>)e.Parameters[0]));
+                break;
+            case EEventType.LOAD_LEVEL:
+                StartCoroutine(LoadLevel((string)e.Parameters[0]));
                 break;
             case EEventType.AUDIO:
                 if(e.Async) PlayAudio((AudioClip)e.Parameters[0], (float)e.Parameters[1]);

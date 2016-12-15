@@ -28,16 +28,22 @@ public class TutorialScript : MonoBehaviour
         AddEvent(EEventType.CONDITION, false, new Func<bool>(CheckReloaded));
 
         for (int i = 0; i < 2; i++)
-            AddEvent(EEventType.SPAWN, true, enemies[i], spawns[i], destinations[i]);
+            AddEvent(EEventType.SPAWN, true, enemies[0], spawns[i], spawns[i]);
         AddEvent(EEventType.AREA_CLEAR, false, null);
 
         AddEvent(EEventType.WAIT, false, 1.0f);
 
         for (int i = 0; i < 2; i++)
-            AddEvent(EEventType.SPAWN, true, enemies[i], spawns[i], destinations[i]);
+            AddEvent(EEventType.SPAWN, true, enemies[0], spawns[i + 2], destinations[i]);
         AddEvent(EEventType.AREA_CLEAR, false, null);
 
         AddEvent(EEventType.MOVE, false, waypoints[0]);
+
+        for (int i = 0; i < 2; i++)
+            AddEvent(EEventType.SPAWN, true, enemies[1], spawns[i + 4], destinations[i + 2]);
+        AddEvent(EEventType.AREA_CLEAR, false, null);
+
+        AddEvent(EEventType.LOAD_LEVEL, false, "MainMenu");
 
         FindObjectOfType<GameController>().Init(_events);
 	}

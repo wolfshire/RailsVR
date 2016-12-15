@@ -1,4 +1,4 @@
-﻿public enum EEventType { NONE, CONDITION, MOVE, AUDIO, SPAWN, AREA_CLEAR, WAIT }
+﻿public enum EEventType { NONE, CONDITION, LOAD_LEVEL, MOVE, AUDIO, SPAWN, AREA_CLEAR, WAIT }
 
 public class GameEvent
 {
