@@ -20,7 +20,7 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (damage <= 0) return;
+        if (damage <= 0 || _health <= 0) return;
 
         _health -= damage;
 

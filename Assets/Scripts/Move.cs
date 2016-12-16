@@ -33,8 +33,6 @@ public class Move : MonoBehaviour
 
     public void StartMove(Transform target)
     {
-        Debug.Log("Moving");
-
         _targetTransform = target;
 
         if (_targetTransform != null)

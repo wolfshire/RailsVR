@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RotateUI : MonoBehaviour
+public class RotateObject : MonoBehaviour
 {
     public float rotateSpeed = 100f;
 
-    private RectTransform _transform;
+    private Transform _transform;
 
-    void Start()
-    {
-        _transform = GetComponent<RectTransform>();
-    }
+	void Start()
+	{
+        _transform = transform;
+	}
 
-    void Update()
-    {
+	void Update()
+	{
         _transform.Rotate(Vector3.forward, rotateSpeed * Time.deltaTime);
-    }
+	}
 }

@@ -12,6 +12,8 @@ public class Gun : MonoBehaviour
     private Transform _barrelTransform;
     private LineRenderer _lineRenderer;
     private AudioSource _audioSource;
+    private GameObject _muzzleFlash;
+    public GameObject _particleSpark;
 
     private Ray _ray = new Ray();
     private RaycastHit _hit;
@@ -49,6 +51,7 @@ public class Gun : MonoBehaviour
         _barrelTransform = transform.Find("Model/Barrel");
         _lineRenderer = _barrelTransform.GetComponent<LineRenderer>();
         _audioSource = transform.GetComponent<AudioSource>();
+        _muzzleFlash = transform.Find("Model/MuzzleFlash").gameObject;
 
         _bulletImages = new GameObject[clipSize];
 
@@ -71,7 +74,7 @@ public class Gun : MonoBehaviour
 
         // Initialize
         _lineRenderer.enabled = false;
-
+        _muzzleFlash.SetActive(false);
         SetAmmo(0);
     }
 
@@ -135,14 +138,13 @@ public class Gun : MonoBehaviour
         _ray.origin = _barrelTransform.position;
         _ray.direction = _barrelTransform.forward;
 
-        if (Physics.Raycast(_ray, out _hit, 100, LayerMask.GetMask("Pickup", "Enemy")))
+        if (Physics.Raycast(_ray, out _hit, 100))
         {
-            Debug.Log("hit: " + _hit.transform.name + " at " + (int)_hit.distance + " units");
-
             if (_hit.transform.GetComponent<Shootable>() != null)
             {
                 _hit.transform.GetComponent<Shootable>().OnClick();
             }
+            Instantiate(_particleSpark, _hit.point, Quaternion.identity);
         }
 
         UpdateUI();
@@ -191,10 +193,12 @@ public class Gun : MonoBehaviour
     private IEnumerator ShowLaser()
     {
         _lineRenderer.enabled = true;
+        _muzzleFlash.SetActive(true);
 
         yield return new WaitForSeconds(0.1f);
 
         _lineRenderer.enabled = false;
+        _muzzleFlash.SetActive(false);
     }
 
     public void EnableSafety()

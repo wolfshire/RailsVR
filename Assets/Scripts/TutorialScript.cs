@@ -17,7 +17,7 @@ public class TutorialScript : MonoBehaviour
 
 	void Start()
 	{
-        _gun = GameObject.FindGameObjectWithTag("Player").GetComponentInChildren<Gun>(true);
+        _gun = GameObject.Find("Player").GetComponentInChildren<Gun>(true);
 
         _events = new List<GameEvent>();
 

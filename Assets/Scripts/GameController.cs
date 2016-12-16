@@ -30,9 +30,6 @@ public class GameController : MonoBehaviour
         private set
         {
             _busy = value;
-
-            if (!_busy && _events.Count > 0)
-                _events.RemoveAt(0);
         }
     }
     
@@ -47,8 +44,8 @@ public class GameController : MonoBehaviour
     }
     
     void Update()
-    {
-        while (!Busy && _events.Count > 0)
+    { 
+        while (!Busy && _eventCounter < _events.Count)
         {
             StartNextEvent();
         }
@@ -104,8 +101,6 @@ public class GameController : MonoBehaviour
         go.GetComponent<Move>().StartMove(destination);
         go.GetComponent<Health>().Death += OnEnemyDeath;
         _enemyCount++;
-
-        _events.RemoveAt(0);
     }
 
     private IEnumerator Conditional(Func<bool> condition)
@@ -138,15 +133,17 @@ public class GameController : MonoBehaviour
 
     private void StartNextEvent()
     {
-        GameEvent e = _events[0];
-        Debug.Log("Starting event " + e.EventType + " " + _eventCounter++);
+        GameEvent e = _events[_eventCounter++];
 
         if(dev && e.EventType == EEventType.AUDIO && !e.Async)
         {
-            Debug.Log("Skipping event " + e.EventType + " " + _eventCounter++ + "(Dev Mode)");
+            Debug.Log("Skipping event " + e.EventType + " " + _eventCounter + "(Dev Mode)");
             Busy = false;
             return;
         }
+
+        Debug.Log(_eventCounter + ") Starting " + e.EventType + "event");
+
         switch (e.EventType)
         {
             case EEventType.CONDITION:

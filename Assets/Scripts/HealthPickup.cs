@@ -8,7 +8,7 @@ public class HealthPickup : Pickup
 
 	void Start()
 	{
-        _playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<Health>();
+        _playerHealth = GameObject.Find("Player").GetComponent<Health>();
 	}
 
     public override void OnClick()
