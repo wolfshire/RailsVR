@@ -30,7 +30,7 @@ public class MenuGun : MonoBehaviour
         _menuTable = FindObjectOfType<MainMenuTable>();
 
         _barrel = _transform.Find("Model/Barrel");
-        _lineRenderer = _barrel.GetComponent<LineRenderer>();
+        _lineRenderer = _transform.Find("Model/Sight").GetComponent<LineRenderer>();
     }
 
     void Update()

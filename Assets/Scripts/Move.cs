@@ -11,14 +11,14 @@ public class Move : MonoBehaviour
     private Transform _targetTransform;
     private bool _moving;
 
-	void Awake()
-	{
+    void Awake()
+    {
         _transform = transform;
         _moving = false;
     }
 
-	void Update()
-	{
+    void Update()
+    {
         if (_moving)
         {
             _transform.position = Vector3.MoveTowards(_transform.position, _targetTransform.position, Speed * Time.deltaTime);

@@ -7,6 +7,9 @@ public class Health : MonoBehaviour
     public delegate void OnHealthChange(int newHealth);
     public event OnHealthChange HealthChange;
 
+    public delegate void OnTakeDamage();
+    public event OnTakeDamage Damaged;
+
     public delegate void OnDeath();
     public event OnDeath Death;
 
@@ -20,9 +23,12 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (damage <= 0 || _health <= 0) return;
+        if (damage < 0 || _health <= 0) return;
 
         _health -= damage;
+
+        if (Damaged != null)
+            Damaged();
 
         HealthChanged();
 

@@ -81,6 +81,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\AccelerationMove.cs" />
     <Compile Include="Assets\Scripts\BlinkUIText.cs" />
     <Compile Include="Assets\Scripts\Cleanup.cs" />
     <Compile Include="Assets\Scripts\Enemy.cs" />
@@ -95,12 +96,12 @@
     <Compile Include="Assets\Scripts\MenuGun.cs" />
     <Compile Include="Assets\Scripts\Move.cs" />
     <Compile Include="Assets\Scripts\Options.cs" />
+    <Compile Include="Assets\Scripts\PhoneUI.cs" />
     <Compile Include="Assets\Scripts\Pickup.cs" />
     <Compile Include="Assets\Scripts\RotateObject.cs" />
     <Compile Include="Assets\Scripts\Shootable.cs" />
     <Compile Include="Assets\Scripts\TutorialScript.cs" />
     <Compile Include="Assets\Scripts\VRFPSCounter.cs" />
-    <Compile Include="Assets\Scripts\WatchUI.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Plugins\SteamVR\Resources\SteamVR_AlphaOut.shader" />

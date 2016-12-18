@@ -28,7 +28,7 @@ public class FiringReticle : MonoBehaviour
 		if (Active)
         {
             _elapsedTime += Time.deltaTime;
-            _elapsedTime = Mathf.Clamp(_elapsedTime, 0, 1);
+            _elapsedTime = Mathf.Clamp(_elapsedTime, 0, _endTime);
             float percent = 1 - _elapsedTime / _endTime;
             _transform.localScale = new Vector3(percent, percent, 1);
         }

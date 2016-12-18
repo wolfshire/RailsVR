@@ -7,18 +7,20 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     public GameObject player;
+    public AudioClip audioMove;
 
-    private Move _playerMove;
+    private AccelerationMove _playerMove;
 
     private AudioSource _audioSource;
     private Gun _playerGun;
+
     private List<GameEvent> _events;
     private int _eventCounter;
     private int _enemyCount;
 
     private AsyncOperation asyncOperation;
 
-    public bool dev = false;
+    public bool DevMode = false;
 
     private bool _busy = false;
     public bool Busy
@@ -35,7 +37,7 @@ public class GameController : MonoBehaviour
     
     void Start()
     {
-        _playerMove = player.GetComponent<Move>();
+        _playerMove = player.GetComponent<AccelerationMove>();
         _playerGun = player.GetComponentInChildren<Gun>(true);
 
         _audioSource = GetComponent<AudioSource>();
@@ -62,11 +64,21 @@ public class GameController : MonoBehaviour
         Busy = false;
     }
 
+    private void PlayAudioAsync(AudioClip clip, float volume)
+    {
+        _audioSource.PlayOneShot(clip, volume);
+    }
+
     private IEnumerator MovePlayer(Transform targetLocation)
     {
         Busy = true;
         
         _playerGun.EnableSafety();
+
+        _audioSource.PlayOneShot(audioMove, 1.0f);
+
+        yield return new WaitForSeconds(0.5f);
+
         _playerMove.StartMove(targetLocation);
 
         while (!_playerMove.Arrived)
@@ -95,12 +107,24 @@ public class GameController : MonoBehaviour
         Busy = false;
     }
 
-    private void SpawnEnemy(GameObject prefab, Transform spawn, Transform destination)
+    private void SpawnEntity(GameObject prefab, Transform spawn, Transform destination)
     {
         GameObject go = Instantiate(prefab, spawn.position, spawn.rotation);
         go.GetComponent<Move>().StartMove(destination);
-        go.GetComponent<Health>().Death += OnEnemyDeath;
-        _enemyCount++;
+
+        Health health = go.GetComponent<Health>();
+
+        if (health != null)
+        {
+            health.Death += OnEnemyDeath;
+            _enemyCount++;
+        }
+    }
+
+    private void RunGeneric(Action action)
+    {
+        if (action != null)
+            action();
     }
 
     private IEnumerator Conditional(Func<bool> condition)
@@ -135,17 +159,20 @@ public class GameController : MonoBehaviour
     {
         GameEvent e = _events[_eventCounter++];
 
-        if(dev && e.EventType == EEventType.AUDIO && !e.Async)
+        if(DevMode && (e.EventType == EEventType.AUDIO || e.EventType == EEventType.WAIT) && !e.Async)
         {
-            Debug.Log("Skipping event " + e.EventType + " " + _eventCounter + "(Dev Mode)");
+            Debug.Log("[" + _eventCounter + "] Skipping " + e.EventType);
             Busy = false;
             return;
         }
 
-        Debug.Log(_eventCounter + ") Starting " + e.EventType + "event");
+        Debug.Log("[" + _eventCounter + "] Starting " + e.EventType);
 
         switch (e.EventType)
         {
+            case EEventType.GENERIC:
+                RunGeneric((Action)e.Parameters[0]);
+                break;
             case EEventType.CONDITION:
                 StartCoroutine(Conditional((Func<bool>)e.Parameters[0]));
                 break;
@@ -153,20 +180,26 @@ public class GameController : MonoBehaviour
                 StartCoroutine(LoadLevel((string)e.Parameters[0]));
                 break;
             case EEventType.AUDIO:
-                if(e.Async) PlayAudio((AudioClip)e.Parameters[0], (float)e.Parameters[1]);
+                if (e.Async) PlayAudioAsync((AudioClip)e.Parameters[0], (float)e.Parameters[1]);
                 else StartCoroutine(PlayAudio((AudioClip)e.Parameters[0], (float)e.Parameters[1])); 
                 break;
             case EEventType.MOVE:
                 StartCoroutine(MovePlayer((Transform)e.Parameters[0]));
                 break;
             case EEventType.SPAWN:
-                SpawnEnemy((GameObject)e.Parameters[0], (Transform)e.Parameters[1], (Transform)e.Parameters[2]);
+                SpawnEntity((GameObject)e.Parameters[0], (Transform)e.Parameters[1], (Transform)e.Parameters[2]);
                 break;
             case EEventType.AREA_CLEAR:
                 StartCoroutine(AreaClear());
                 break;
             case EEventType.WAIT:
                 StartCoroutine(Wait((float)e.Parameters[0]));
+                break;
+            case EEventType.SAFETY_ON:
+                _playerGun.EnableSafety();
+                break;
+            case EEventType.SAFETY_OFF:
+                _playerGun.DisableSafety();
                 break;
             case EEventType.NONE:
                 break;

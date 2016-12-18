@@ -492,9 +492,9 @@ GameObject:
   - component: {fileID: 114282701935794002}
   - component: {fileID: 114140148809359016}
   - component: {fileID: 82798237650770090}
-  - component: {fileID: 114204680669118246}
+  - component: {fileID: 114162929816554818}
   m_Layer: 16
-  m_Name: EnemyA
+  m_Name: EnemyTutorial
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -867,6 +867,21 @@ GameObject:
   - component: {fileID: 144937551903266652}
   m_Layer: 16
   m_Name: LeftArm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1629764777539558
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4025462862712570}
+  m_Layer: 16
+  m_Name: Barrel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1317,6 +1332,19 @@ Transform:
   m_Father: {fileID: 4423007678888958}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4025462862712570
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1629764777539558}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.13, y: 1.31, z: 0.534}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4388435236350378}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4026292693746980
 Transform:
   m_ObjectHideFlags: 1
@@ -1737,6 +1765,7 @@ Transform:
   - {fileID: 4105819237661974}
   - {fileID: 4236174118714614}
   - {fileID: 4444735897765294}
+  - {fileID: 4025462862712570}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2792,12 +2821,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85e0b18d4d6ebc74bb4f61790a347f21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _attackSpeed: 2
-  _damage: 1
+  _attackSpeed: 3
+  _damage: 0
   audioFiles:
   - {fileID: 8300000, guid: 181240f770006c74493a395459c78d80, type: 3}
-  - {fileID: 8300000, guid: 803c0c8751d1c1249829ce2c245c1938, type: 3}
---- !u!114 &114204680669118246
+  - {fileID: 8300000, guid: 9745e548ed28f6f46b998a083ade02e9, type: 3}
+--- !u!114 &114162929816554818
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -2820,7 +2849,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 596aac018b4846b4c9cc1a2e79c98c66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingHealth: 2
+  startingHealth: 1
 --- !u!114 &114337792048589848
 MonoBehaviour:
   m_ObjectHideFlags: 1

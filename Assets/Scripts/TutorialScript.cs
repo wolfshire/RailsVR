@@ -5,12 +5,15 @@ using UnityEngine;
 
 public class TutorialScript : MonoBehaviour
 {
+    public GameObject[] lights;
+    public AudioClip[] miscAudio;
     public AudioClip[] dialogue;
     public Transform[] waypoints;
     public GameObject[] enemies;
     public Transform[] spawns;
     public Transform[] destinations;
 
+    private int _dialogueIndex = 0;
     private Gun _gun;
 
     private List<GameEvent> _events;
@@ -20,33 +23,75 @@ public class TutorialScript : MonoBehaviour
         _gun = GameObject.Find("Player").GetComponentInChildren<Gun>(true);
 
         _events = new List<GameEvent>();
+        AddEvent(EEventType.WAIT, false, 4f);
+        AddEvent(EEventType.AUDIO, true, miscAudio[0], 1f);
+        AddEvent(EEventType.GENERIC, false, new Action(Spotlight));
+        AddEvent(EEventType.WAIT, false, 1f);
 
-        AddEvent(EEventType.AUDIO, false, dialogue[0], 8.0f);
-
-        AddEvent(EEventType.AUDIO, false, dialogue[1], 8.0f);
-
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
         AddEvent(EEventType.CONDITION, false, new Func<bool>(CheckReloaded));
 
+        AddEvent(EEventType.WAIT, false, 1f);
+        AddEvent(EEventType.AUDIO, true, miscAudio[0], 1f);
+        AddEvent(EEventType.GENERIC, false, new Action(Roomlights));
+        AddEvent(EEventType.WAIT, false, 1f);
+
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
+
+        //stationary targets
         for (int i = 0; i < 2; i++)
             AddEvent(EEventType.SPAWN, true, enemies[0], spawns[i], spawns[i]);
         AddEvent(EEventType.AREA_CLEAR, false, null);
 
-        AddEvent(EEventType.WAIT, false, 1.0f);
+        AddEvent(EEventType.WAIT, false, 1f);
 
+        //moving targets
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
         for (int i = 0; i < 2; i++)
             AddEvent(EEventType.SPAWN, true, enemies[0], spawns[i + 2], destinations[i]);
         AddEvent(EEventType.AREA_CLEAR, false, null);
 
-        AddEvent(EEventType.MOVE, false, waypoints[0]);
+        AddEvent(EEventType.WAIT, false, 1f);
 
-        for (int i = 0; i < 2; i++)
-            AddEvent(EEventType.SPAWN, true, enemies[1], spawns[i + 4], destinations[i + 2]);
+        //move to 2nd room
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
+        AddEvent(EEventType.WAIT, false, 1f);
+        AddEvent(EEventType.MOVE, false, waypoints[0]);
+        AddEvent(EEventType.SAFETY_ON, false, null);
+
+        //private wilhelm
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
+        AddEvent(EEventType.SPAWN, true, enemies[1], spawns[4], destinations[2]);
+        AddEvent(EEventType.WAIT, false, 7.0f);
+
+        //cover
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
+        AddEvent(EEventType.SPAWN, false, enemies[2], spawns[5], destinations[3]);
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
+
+        AddEvent(EEventType.WAIT, false, 5.0f);
+
+        //shoot back
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
+        AddEvent(EEventType.SAFETY_OFF, false, null);
         AddEvent(EEventType.AREA_CLEAR, false, null);
+
+        AddEvent(EEventType.WAIT, false, 1.5f);
+
+        //well done
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
+
+        AddEvent(EEventType.AUDIO, false, GetNextDialogue(), 2.0f);
 
         AddEvent(EEventType.LOAD_LEVEL, false, "MainMenu");
 
         FindObjectOfType<GameController>().Init(_events);
 	}
+
+    private AudioClip GetNextDialogue()
+    {
+        return dialogue[_dialogueIndex++];
+    }
 
     private bool CheckReloaded()
     {
@@ -56,5 +101,17 @@ public class TutorialScript : MonoBehaviour
     public void AddEvent(EEventType eventType, bool async, params object[] parameters)
     {
         _events.Add(new GameEvent(eventType, async, parameters));
+    }
+
+    private void Spotlight()
+    {
+        lights[0].SetActive(true);
+    }
+
+    private void Roomlights()
+    {
+        lights[0].SetActive(false);
+        lights[1].SetActive(true);
+        lights[2].SetActive(true);
     }
 }

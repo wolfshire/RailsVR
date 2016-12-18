@@ -10,6 +10,7 @@ public class Gun : MonoBehaviour
     private SteamVR_TrackedController _controller;
 
     private Transform _barrelTransform;
+    private Transform _sightTransform;
     private LineRenderer _lineRenderer;
     private AudioSource _audioSource;
     private GameObject _muzzleFlash;
@@ -26,6 +27,8 @@ public class Gun : MonoBehaviour
     private GameObject _reloadUI;
     private GameObject _dryUI;
     private GameObject _waitUI;
+    private GameObject _moveUI;
+    private GameController _gameController;
 
     private bool _safety = false;
 
@@ -44,18 +47,23 @@ public class Gun : MonoBehaviour
 
     void Start()
     {
+        Transform _transform = transform;
+
         // Assign
-        _controller = transform.GetComponentInParent<SteamVR_TrackedController>();
+        _gameController = FindObjectOfType<GameController>();
+        _controller = _transform.GetComponentInParent<SteamVR_TrackedController>();
+        _controller.SetDeviceIndex(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost));
         _controller.TriggerClicked += TriggerPressed;
 
-        _barrelTransform = transform.Find("Model/Barrel");
-        _lineRenderer = _barrelTransform.GetComponent<LineRenderer>();
-        _audioSource = transform.GetComponent<AudioSource>();
-        _muzzleFlash = transform.Find("Model/MuzzleFlash").gameObject;
+        _barrelTransform = _transform.Find("Model/Barrel");
+        _sightTransform = _transform.Find("Model/Sight");
+        _lineRenderer = _sightTransform.GetComponent<LineRenderer>();
+        _audioSource = _transform.GetComponent<AudioSource>();
+        _muzzleFlash = _transform.Find("Model/MuzzleFlash").gameObject;
 
         _bulletImages = new GameObject[clipSize];
 
-        _bulletUI = transform.Find("BulletUI").gameObject;
+        _bulletUI = _transform.Find("BulletUI").gameObject;
         Transform _bulletTransform = _bulletUI.transform;
 
         for (int i = 0; i < clipSize; i++)
@@ -63,19 +71,29 @@ public class Gun : MonoBehaviour
             _bulletImages[i] = _bulletTransform.GetChild(i).gameObject;
         }
 
-        _reloadUI = transform.Find("ReloadUI").gameObject;
+        _reloadUI = _transform.Find("ReloadUI").gameObject;
         _reloadUI.SetActive(false);
 
-        _dryUI = transform.Find("DryUI").gameObject;
+        _dryUI = _transform.Find("DryUI").gameObject;
         _dryUI.SetActive(false);
 
-        _waitUI = transform.Find("WaitUI").gameObject;
+        _waitUI = _transform.Find("WaitUI").gameObject;
         _waitUI.SetActive(false);
 
         // Initialize
-        _lineRenderer.enabled = false;
         _muzzleFlash.SetActive(false);
         SetAmmo(0);
+    }
+
+    void Update()
+    {
+        _ray.origin = _sightTransform.position;
+        _ray.direction = _sightTransform.forward;
+
+        if (Physics.Raycast(_ray, out _hit, 200f))
+            _lineRenderer.SetPosition(1, new Vector3(0, 0, _sightTransform.InverseTransformPoint(_hit.point).z));
+        else
+            _lineRenderer.SetPosition(1, _ray.GetPoint(200));
     }
 
     private void SetAmmo(int ammo)
@@ -133,7 +151,7 @@ public class Gun : MonoBehaviour
         _audioSource.PlayOneShot(audioFiles[0], 1);
 
         _ammo--;
-        StartCoroutine(ShowLaser());
+        StartCoroutine(ShowMuzzleFlash());
 
         _ray.origin = _barrelTransform.position;
         _ray.direction = _barrelTransform.forward;
@@ -190,14 +208,12 @@ public class Gun : MonoBehaviour
         UpdateUI();
     }
 
-    private IEnumerator ShowLaser()
+    private IEnumerator ShowMuzzleFlash()
     {
-        _lineRenderer.enabled = true;
         _muzzleFlash.SetActive(true);
 
         yield return new WaitForSeconds(0.1f);
-
-        _lineRenderer.enabled = false;
+        
         _muzzleFlash.SetActive(false);
     }
 
