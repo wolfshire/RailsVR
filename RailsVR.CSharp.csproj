@@ -88,18 +88,23 @@
     <Compile Include="Assets\Scripts\Event.cs" />
     <Compile Include="Assets\Scripts\FiringReticle.cs" />
     <Compile Include="Assets\Scripts\GameController.cs" />
+    <Compile Include="Assets\Scripts\GameOverUI.cs" />
     <Compile Include="Assets\Scripts\Gun.cs" />
     <Compile Include="Assets\Scripts\Health.cs" />
     <Compile Include="Assets\Scripts\HealthPickup.cs" />
     <Compile Include="Assets\Scripts\Infantry.cs" />
+    <Compile Include="Assets\Scripts\Level.cs" />
     <Compile Include="Assets\Scripts\MainMenuTable.cs" />
     <Compile Include="Assets\Scripts\MenuGun.cs" />
+    <Compile Include="Assets\Scripts\Mission1.cs" />
     <Compile Include="Assets\Scripts\Move.cs" />
     <Compile Include="Assets\Scripts\Options.cs" />
+    <Compile Include="Assets\Scripts\OptionsUI.cs" />
     <Compile Include="Assets\Scripts\PhoneUI.cs" />
     <Compile Include="Assets\Scripts\Pickup.cs" />
     <Compile Include="Assets\Scripts\RotateObject.cs" />
     <Compile Include="Assets\Scripts\Shootable.cs" />
+    <Compile Include="Assets\Scripts\TextColorChange.cs" />
     <Compile Include="Assets\Scripts\TutorialScript.cs" />
     <Compile Include="Assets\Scripts\VRFPSCounter.cs" />
   </ItemGroup>
@@ -115,6 +120,7 @@
     <None Include="Assets\Plugins\SteamVR\Resources\SteamVR_SphericalProjection.shader" />
     <None Include="Assets\Plugins\SteamVR\readme.txt" />
     <None Include="Assets\Scripts\Shaders\3DText.shader" />
+    <None Include="Assets\Scripts\Shaders\Outline.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

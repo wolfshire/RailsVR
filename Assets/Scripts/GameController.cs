@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(AudioSource))]
 public class GameController : MonoBehaviour
 {
     public GameObject player;
@@ -13,6 +14,7 @@ public class GameController : MonoBehaviour
 
     private AudioSource _audioSource;
     private Gun _playerGun;
+    private PhoneUI _phone;
 
     private List<GameEvent> _events;
     private int _eventCounter;
@@ -39,10 +41,13 @@ public class GameController : MonoBehaviour
     {
         _playerMove = player.GetComponent<AccelerationMove>();
         _playerGun = player.GetComponentInChildren<Gun>(true);
+        _phone = player.GetComponentInChildren<PhoneUI>(true);
 
         _audioSource = GetComponent<AudioSource>();
 
         _enemyCount = 0;
+
+        _phone.timerEnabled = !DevMode;
     }
     
     void Update()
@@ -53,39 +58,77 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayAudio(AudioClip clip, float volume)
+    private IEnumerator PlayAudio(AudioClip clip, EAudioType audioType, float volume)
     {
         Busy = true;
+        float volumeMod = 0;
 
-        _audioSource.PlayOneShot(clip, volume);
+        switch(audioType)
+        {
+            case EAudioType.DIALOGUE:
+                volumeMod = Options.DialogueVolume;
+                break;
+            case EAudioType.MUSIC:
+                volumeMod = Options.MusicVolume;
+                break;
+            case EAudioType.SFX:
+                volumeMod = Options.FXVolume;
+                break;
+            case EAudioType.NONE:
+                break;
+        }
+
+        volumeMod *= Options.MasterVolume;
+        _audioSource.PlayOneShot(clip, volume * volumeMod);
 
         yield return new WaitForSeconds(clip.length);
 
         Busy = false;
     }
 
-    private void PlayAudioAsync(AudioClip clip, float volume)
+    private void PlayAudioAsync(AudioClip clip, EAudioType audioType, float volume)
     {
         _audioSource.PlayOneShot(clip, volume);
     }
 
-    private IEnumerator MovePlayer(Transform targetLocation)
+    private IEnumerator MovePlayer(Transform[] targetLocations)
     {
         Busy = true;
-        
+
+        _phone.timerEnabled = false;
         _playerGun.EnableSafety();
 
         _audioSource.PlayOneShot(audioMove, 1.0f);
 
         yield return new WaitForSeconds(0.5f);
 
-        _playerMove.StartMove(targetLocation);
+        _playerMove.StartMove(targetLocations);
 
         while (!_playerMove.Arrived)
             yield return null;
 
         _playerGun.DisableSafety();
+        _phone.timerEnabled = true;
+
         Busy = false;
+    }
+
+    private IEnumerator MovePlayerAsync(Transform[] targetLocations)
+    {
+        _phone.timerEnabled = false;
+        _playerGun.EnableSafety();
+
+        _audioSource.PlayOneShot(audioMove, 1.0f);
+
+        yield return new WaitForSeconds(0.5f);
+
+        _playerMove.StartMove(targetLocations);
+
+        while (!_playerMove.Arrived)
+            yield return null;
+
+        _playerGun.DisableSafety();
+        _phone.timerEnabled = true;
     }
 
     private IEnumerator AreaClear()
@@ -180,11 +223,15 @@ public class GameController : MonoBehaviour
                 StartCoroutine(LoadLevel((string)e.Parameters[0]));
                 break;
             case EEventType.AUDIO:
-                if (e.Async) PlayAudioAsync((AudioClip)e.Parameters[0], (float)e.Parameters[1]);
-                else StartCoroutine(PlayAudio((AudioClip)e.Parameters[0], (float)e.Parameters[1])); 
+                if (e.Async) PlayAudioAsync((AudioClip)e.Parameters[0], (EAudioType)e.Parameters[1], (float)e.Parameters[2]);
+                else StartCoroutine(PlayAudio((AudioClip)e.Parameters[0], (EAudioType)e.Parameters[1], (float)e.Parameters[2])); 
                 break;
             case EEventType.MOVE:
-                StartCoroutine(MovePlayer((Transform)e.Parameters[0]));
+                StartCoroutine(MovePlayer(new Transform[] { (Transform)e.Parameters[0] }));
+                break;
+            case EEventType.MULTI_MOVE:
+                if (e.Async) StartCoroutine(MovePlayerAsync((Transform[])e.Parameters));
+                else StartCoroutine(MovePlayer((Transform[])e.Parameters));
                 break;
             case EEventType.SPAWN:
                 SpawnEntity((GameObject)e.Parameters[0], (Transform)e.Parameters[1], (Transform)e.Parameters[2]);
@@ -209,5 +256,14 @@ public class GameController : MonoBehaviour
     public void Init(List<GameEvent> events)
     {
         _events = events;
+    }
+
+    public void GameOver()
+    {
+        Infantry[] infantry = FindObjectsOfType<Infantry>();
+        for(int i = 0; i < infantry.Length; i++)
+        {
+            infantry[i].enabled = false;
+        }
     }
 }

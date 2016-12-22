@@ -7,15 +7,17 @@ public class AccelerationMove : MonoBehaviour
     public float MinSpeed = 0.5f;
     public float AccelerationPercent = 0.1f;
     
-
     public bool Arrived { get { return !_moving; } }
 
     private Transform _transform;
-    private Transform _targetTransform;
+    private Vector3 _startPos;
+    private Transform[] _targetNodes;
     private bool _moving;
 
+    private int destinationIndex;
     private float _speed;
-    private float _startDistance;
+    private float[] _distances;
+    private float _totalDistance;
     private float _accDistance;
     private float _decDistance;
 
@@ -29,16 +31,24 @@ public class AccelerationMove : MonoBehaviour
 	{
         if (_moving)
         {
-            _transform.position = Vector3.MoveTowards(_transform.position, _targetTransform.position, _speed * Time.deltaTime);
-            Vector3 distanceVector = _targetTransform.position - _transform.position;
+            // Move towards the next node
+            _transform.position = Vector3.MoveTowards(_transform.position, _targetNodes[destinationIndex].position, _speed * Time.deltaTime);
+
+            Vector3 distanceVector = _targetNodes[destinationIndex].position - _transform.position;
             float distance = distanceVector.magnitude;
 
-            if (distance > _accDistance)
+            if (destinationIndex == 0)
             {
-                _speed = MaxSpeed * ((_startDistance - distance) / _decDistance);
-                _speed = Mathf.Clamp(_speed, MinSpeed, MaxSpeed);
+                Vector3 fromStart = _transform.position - _startPos;
+                float fromStartDistance = fromStart.magnitude;
+
+                if (fromStartDistance < _accDistance)
+                {
+                    _speed = MaxSpeed * (fromStartDistance / _accDistance);
+                    _speed = Mathf.Clamp(_speed, MinSpeed, MaxSpeed);
+                }
             }
-            else if (distance < _decDistance)
+            else if (destinationIndex == _targetNodes.Length - 1 && distance < _decDistance)
             {
                 _speed = MaxSpeed * (distance / _decDistance);
             }
@@ -47,25 +57,45 @@ public class AccelerationMove : MonoBehaviour
 
             if (distance < 0.025f)
             {
-                _moving = false;
-                _transform.position = _targetTransform.position;
+                if (destinationIndex == _targetNodes.Length - 1)
+                {
+                    _moving = false;
+                    _transform.position = _targetNodes[destinationIndex].position;
+                }
+                else
+                {
+                    destinationIndex++;
+                }
             }
-
-            
         }
     }
 
-    public void StartMove(Transform target)
+    public void StartMove(Transform[] nodes)
     {
-        _targetTransform = target;
+        if (nodes == null) return;
 
-        if (_targetTransform != null)
+        _targetNodes = nodes;
+        _distances = new float[_targetNodes.Length - 1];
+
+        if (_distances.Length == 0)
         {
-            _moving = true;
-
-            _startDistance = (_targetTransform.position - _transform.position).magnitude;
-            _decDistance = _startDistance * AccelerationPercent;
-            _accDistance = _startDistance - _decDistance;
+            _totalDistance = (_targetNodes[0].position - _transform.position).magnitude;
+            _distances = new float[] { _totalDistance };
         }
+        else
+        {
+            for (int i = 0; i < _distances.Length; i++)
+            {
+                _distances[i] = (_targetNodes[i + 1].position - _targetNodes[i].position).magnitude;
+                _totalDistance += _distances[i];
+            }
+        }
+
+        _accDistance = _distances[0] * AccelerationPercent;
+        _decDistance = _distances[_distances.Length - 1] * AccelerationPercent;
+
+        destinationIndex = 0;
+        _startPos = _transform.position;
+        _moving = true;
     }
 }

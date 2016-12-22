@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -6,10 +7,13 @@ using UnityEngine.UI;
 
 public class PhoneUI : MonoBehaviour
 {
+    public bool timerEnabled = false;
     public int minutes = 0;
     public int seconds = 0;
 
-    private float _secondTimer = 1;
+    private float _secondTimer = 0;
+
+    private Transform _transform;
 
     private Health _health;
     private GameObject _damageUI;
@@ -21,14 +25,23 @@ public class PhoneUI : MonoBehaviour
     private TextMesh _extraLivesText;
 
     private SteamVR_TrackedController _controller;
+    private SteamVR_TrackedObject _object;
+    private int _deviceIndex;
 
     private GameController _gameController;
 
     void Start()
     {
+        _transform = transform;
         _gameController = FindObjectOfType<GameController>();
-        _controller = transform.GetComponentInParent<SteamVR_TrackedController>();
-        _controller.SetDeviceIndex(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost));
+        _controller = _transform.GetComponentInParent<SteamVR_TrackedController>();
+        if (!Options.LeftHanded)
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost);
+        else
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost);
+        ;
+        _controller.SetDeviceIndex(_deviceIndex);
+        StartCoroutine(GetController());
         GameObject player = GameObject.Find("Player");
         _health = player.GetComponent<Health>();
         _gameOver = player.transform.FindChild("GameOver").gameObject;
@@ -59,15 +72,26 @@ public class PhoneUI : MonoBehaviour
 
         _health.Death += () =>
         {
-            Time.timeScale = 0.0f;
+            _gameController.GameOver();
             _gameOver.SetActive(true);
             FindObjectOfType<Gun>().EnableSafety();
         };
+
+        Debug.Log("Phone: Device Index = " + _deviceIndex);
+    }
+
+    private IEnumerator GetController()
+    {
+        yield return new WaitWhile(new Func<bool>(() => _transform.GetComponentInParent<SteamVR_TrackedObject>() == null));
+
+        _object = _transform.GetComponentInParent<SteamVR_TrackedObject>();
+        _object.SetDeviceIndex(_deviceIndex);
     }
 
     void Update()
     {
-        _secondTimer -= Time.deltaTime;
+        if (timerEnabled)
+            _secondTimer -= Time.deltaTime;
 
         if (_secondTimer <= 0)
         {
@@ -93,12 +117,23 @@ public class PhoneUI : MonoBehaviour
         if (minutes <= 0 && seconds < 21)
             _timeText.GetComponent<Renderer>().material.color = seconds % 2 == 0 ? Color.red : Color.white;
 
-        _timeText.text = string.Format("{0:00}:{1:00}:{2:00}'", minutes, seconds, _secondTimer * 100);
+        _timeText.text = string.Format("{0:00}:{1:00}:{2:00}'", minutes, seconds, Mathf.RoundToInt(_secondTimer * 100));
 
         if (Input.GetKeyUp(KeyCode.H) && _gameController.DevMode)
             _health.TakeDamage(1);
         if (_controller.gripped && _gameController.DevMode)
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void SwapHandedness()
+    {
+        if (_deviceIndex == SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost))
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost);
+        else
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost);
+
+        _controller.SetDeviceIndex(_deviceIndex);
+        _object.SetDeviceIndex(_deviceIndex);
     }
 
     private void UpdateHealthUI(int newHealth)

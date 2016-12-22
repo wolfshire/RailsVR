@@ -38,6 +38,10 @@ public class Infantry : Shootable
         _health = GetComponent<Health>();
         _health.Death += () =>
         {
+            Collider[] c = GetComponents<Collider>();
+            foreach (Collider col in c)
+                col.enabled = false;
+
             _reticle.End();
 
             _ragdoll.SetActive(true);

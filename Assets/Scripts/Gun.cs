@@ -2,13 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Gun : MonoBehaviour
 {
     private static int PICKUP_LAYER = -1;
 
     private SteamVR_TrackedController _controller;
+    private SteamVR_TrackedObject _object;
+    private int _deviceIndex;
 
+    private Transform _transform;
     private Transform _barrelTransform;
     private Transform _sightTransform;
     private LineRenderer _lineRenderer;
@@ -29,6 +34,9 @@ public class Gun : MonoBehaviour
     private GameObject _waitUI;
     private GameObject _moveUI;
     private GameController _gameController;
+    
+    private Button _button;
+    private Button _lastButton;
 
     private bool _safety = false;
 
@@ -38,7 +46,7 @@ public class Gun : MonoBehaviour
     private bool _flashing;
 
     public AudioClip[] audioFiles;
-
+    
     void Awake()
     {
         if (PICKUP_LAYER == -1)
@@ -47,13 +55,18 @@ public class Gun : MonoBehaviour
 
     void Start()
     {
-        Transform _transform = transform;
+        _transform = transform;
 
         // Assign
         _gameController = FindObjectOfType<GameController>();
         _controller = _transform.GetComponentInParent<SteamVR_TrackedController>();
-        _controller.SetDeviceIndex(SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost));
+        if(!Options.LeftHanded)
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost);
+        else
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost);
+        _controller.SetDeviceIndex(_deviceIndex);
         _controller.TriggerClicked += TriggerPressed;
+        StartCoroutine(GetController());
 
         _barrelTransform = _transform.Find("Model/Barrel");
         _sightTransform = _transform.Find("Model/Sight");
@@ -83,6 +96,16 @@ public class Gun : MonoBehaviour
         // Initialize
         _muzzleFlash.SetActive(false);
         SetAmmo(0);
+
+        Debug.Log("Gun: Device Index = " + _deviceIndex);
+    }
+
+    private IEnumerator GetController()
+    {
+        yield return new WaitWhile(new Func<bool>(() => _transform.GetComponentInParent<SteamVR_TrackedObject>() == null));
+        
+        _object = _transform.GetComponentInParent<SteamVR_TrackedObject>();
+        _object.SetDeviceIndex(_deviceIndex);
     }
 
     void Update()
@@ -91,9 +114,40 @@ public class Gun : MonoBehaviour
         _ray.direction = _sightTransform.forward;
 
         if (Physics.Raycast(_ray, out _hit, 200f))
-            _lineRenderer.SetPosition(1, new Vector3(0, 0, _sightTransform.InverseTransformPoint(_hit.point).z));
+        {
+            if (_hit.transform.gameObject.layer == LayerMask.NameToLayer("UI"))
+            {
+                _lastButton = _button;
+                _button = _hit.transform.GetComponent<Button>();
+                
+                if (_button != null)
+                {
+                    if (_button != _lastButton)
+                    {
+
+                    }
+                }
+                else
+                {
+
+                }
+            }
+
+            _lineRenderer.SetPosition(1, new Vector3(0, 0, _hit.distance));
+        }
         else
-            _lineRenderer.SetPosition(1, _ray.GetPoint(200));
+            _lineRenderer.SetPosition(1, _sightTransform.InverseTransformPoint(_ray.GetPoint(200)));
+    }
+
+    public void SwapHandedness()
+    {
+        if (_deviceIndex == SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost))
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost);
+        else
+            _deviceIndex = SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost);
+
+        _controller.SetDeviceIndex(_deviceIndex);
+        _object.SetDeviceIndex(_deviceIndex);
     }
 
     private void SetAmmo(int ammo)
@@ -104,6 +158,12 @@ public class Gun : MonoBehaviour
     
     private void TriggerPressed(object sender, ClickedEventArgs e)
     {
+        if (_button != null)
+        {
+            _button.OnPointerClick(new PointerEventData(EventSystem.current));
+            return;
+        }
+
         if (_safety) return;
 
         if (_ammo > 0)
@@ -158,10 +218,17 @@ public class Gun : MonoBehaviour
 
         if (Physics.Raycast(_ray, out _hit, 100))
         {
+            //Debug.Log("Hit: " + _hit.transform.name);
             if (_hit.transform.GetComponent<Shootable>() != null)
             {
                 _hit.transform.GetComponent<Shootable>().OnClick();
             }
+
+            if (_hit.transform.GetComponent<Rigidbody>() != null)
+            {
+                _hit.transform.GetComponent<Rigidbody>().AddForce(_ray.direction * 20000000);
+            }
+
             Instantiate(_particleSpark, _hit.point, Quaternion.identity);
         }
 
